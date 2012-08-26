@@ -1,4 +1,18 @@
 <?php
+/*
+ * Checks for an existing correct version of the PluginStarter
+ *
+ * Inspiration and small bits of code from the following plugins:
+ * Developer by Automattic
+ * Shadowbox-js
+ */
+
+ /*
+  * Todos
+  *
+  * Add versiuon number to each function - check_for_plugin_starter_notice_1 - to make sure we are not using old functions?
+  * Test against existing pluginstarter version if it exists.
+  */
 
 if ( ! defined( 'PLUGIN_STARTER_LATEST_ZIP' ) ) define ( 'PLUGIN_STARTER_LATEST_ZIP' , 'http://pluginstarter.com/latest.zip' );
 
@@ -61,22 +75,23 @@ if ( ! function_exists( 'plugin_starter_download' ) ) {
 
 if ( ! function_exists( 'check_for_plugin_starter' ) ) {
 	function check_for_plugin_starter () {
+		$exists = 'no';
+		$basedir = trailingslashit( WP_CONTENT_DIR ) . 'plugin-starter';
+
+		// does the class exist? - check for mu-plugins or other plugin		
+		if ( class_exists( 'Plugin_Starter' ) ) {
+			$exists = 'yes';
+		// is the plugin installed but maybe not activated?
+		} elseif ( file_exists ( $basedir ) ) {		
+			$exists = 'maybe';
+		} else {
+			plugin_starter_download();
 			$exists = 'no';
-			$basedir = trailingslashit( WP_CONTENT_DIR ) . 'plugin-starter';
-	
-			// does the class exist? - check for mu-plugins or other plugin		
-			if ( class_exists( 'Plugin_Starter' ) ) {
-				$exists = 'yes';
-			// is the plugin installed but maybe not activated?
-			} elseif ( file_exists ( $basedir ) ) {		
-				$exists = 'maybe';
-			} else {
-				plugin_starter_download();
-				$exists = 'no';
-			}
-	
-			// check version?
-			add_filter ( 'check_for_plugin_starter_exists' , create_function('', "return $exists;") );				
-			add_action ( 'admin_notices' , 'check_for_plugin_starter_notice' );
+		}
+
+		// check version?
+		
+		add_filter ( 'check_for_plugin_starter_exists' , create_function('', "return $exists;") );				
+		add_action ( 'admin_notices' , 'check_for_plugin_starter_notice' );
 	}
 }
