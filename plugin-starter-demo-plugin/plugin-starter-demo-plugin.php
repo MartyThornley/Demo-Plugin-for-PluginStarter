@@ -1,14 +1,14 @@
 <?php
 /**
  * @package PluginStarter Demo Plugin
- * @version 1.0
+ * @version 1.0.1
  */
 /*
 Plugin Name: PluginStarter Demo Plugin
 Plugin URI: http://martythornley.com
 Description: A demo/test plugin that uses plugin starter.
 Author: Marty Thornley
-Version: 1.0
+Version: 1.0.1
 Author URI: http://martythornley.com
 */
 

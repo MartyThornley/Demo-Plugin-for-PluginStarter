@@ -10,7 +10,7 @@
  /*
   * Todos
   *
-  * Add versiuon number to each function - check_for_plugin_starter_notice_1 - to make sure we are not using old functions?
+  * Add version number to each function - check_for_plugin_starter_notice_1 - to make sure we are not using old functions?
   * Test against existing pluginstarter version if it exists.
   */
 
@@ -31,45 +31,58 @@ if ( ! function_exists( 'check_for_plugin_starter_notice' ) ) {
 			case 'no' :
 			 	$msg = get_option( 'plugin_starter_download' );
 				if ( $msg == 'Success' )
-					$msg = 'The PluginStarter is MAYBE installed';
+					$msg = 'The plugin "PluginStarter" should be <a href="'.admin_url( 'plugins.php' ).'">activated</a>.';
 				break;
 		}
 		if ( $msg )
-			echo '<div class="error fade">'.$msg.'</div>';
+			echo '<div class="error fade"><p>'.$msg.'</p></div>';
 	}
 }
 
 if ( ! function_exists( 'plugin_starter_download' ) ) {
 	function plugin_starter_download( $creds = '' ){
 		global $wp_filesystem;
+		
+		$mu_file = WP_CONTENT_DIR . '/mu-plugins/plugin-starter.php';
+		$this_plugin_dir = plugin_dir_path( __FILE__ );
+		$core_dir = trailingslashit( $this_plugin_dir ) . 'core';
+		$core_file = $core_dir . '/plugin-starter.php';
+		
+		if ( ! file_exists( $mu_file ) && ! file_exists( $core_file ) ) { 
 
-		if ( empty ( $creds ) )
-			$creds = request_filesystem_credentials ( '' );
-
-		if ( ! WP_Filesystem ( $creds ) ) {
-			update_option( 'plugin_starter_download' , 'Could not access WP FileSystem' );
-			return false;
+			if ( empty ( $creds ) )
+				$creds = request_filesystem_credentials ( '' );
+	
+			if ( ! WP_Filesystem ( $creds ) ) {
+				update_option( 'plugin_starter_download' , 'Could not access WP FileSystem' );
+				return false;
+			}
+			
+			$tempfname = download_url ( PLUGIN_STARTER_LATEST_ZIP );
+	
+			if ( is_wp_error ( $tempfname ) ) {
+				update_option( 'plugin_starter_download' , 'Could not download file' );
+				return false;
+			}
+			
+			if ( ! file_exists ( $tempfname ) ) {
+				update_option( 'plugin_starter_download' , 'File downloaded but unreadable' );
+				return false;
+			}
+			
+			if ( ! file_exists( trailingslashit( $this_plugin_dir ) . 'core' ) )
+				mkdir ( trailingslashit( $this_plugin_dir ) . 'core' );
+			
+			$result = unzip_file ( $tempfname , $core_dir );
+			unlink ( $tempfname );
+		
 		}
 		
-		$tempfname = download_url ( PLUGIN_STARTER_LATEST_ZIP );
-
-		if ( is_wp_error ( $tempfname ) ) {
-			update_option( 'plugin_starter_download' , 'Could not download file' );
-			return false;
-		}
-		
-		if ( ! file_exists ( $tempfname ) ) {
-			update_option( 'plugin_starter_download' , 'File downloaded but unreadable' );
-			return false;
-		}
-		
-		if ( ! file_exists( WP_CONTENT_DIR . '/plugins/plugin-starter' ) ) { 
-			$result = unzip_file ( $tempfname , WP_CONTENT_DIR . '/plugins' );
-		}
-		unlink ( $tempfname );
-		
-		if ( $result === true )
+		if ( $result === true || is_file( $core_file ) )
 			update_option( 'plugin_starter_download' , 'Success' );
+		else 
+			update_option( 'plugin_starter_download' , 'Problem Unzipping file' );
+
 	}
 }
 
