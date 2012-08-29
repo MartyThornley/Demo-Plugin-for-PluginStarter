@@ -14,7 +14,7 @@
   * Test against existing pluginstarter version if it exists.
   */
 
-if ( ! defined( 'PLUGIN_STARTER_LATEST_ZIP' ) ) define ( 'PLUGIN_STARTER_LATEST_ZIP' , 'http://pluginstarter.com/latest.zip' );
+if ( ! defined( 'PLUGIN_STARTER_LATEST_ZIP' ) ) define ( 'PLUGIN_STARTER_LATEST_ZIP' , 'https://github.com/MartyThornley/PluginStarter/zipball/master' );
 
 add_action( 'admin_init' , 'check_for_plugin_starter' );
 
@@ -89,7 +89,7 @@ if ( ! function_exists( 'plugin_starter_download' ) ) {
 if ( ! function_exists( 'check_for_plugin_starter' ) ) {
 	function check_for_plugin_starter () {
 		$exists = 'no';
-		$basedir = trailingslashit( WP_CONTENT_DIR ) . 'plugin-starter';
+		$basedir = trailingslashit( WP_CONTENT_DIR ) . '/plugins/plugin-starter';
 
 		// does the class exist? - check for mu-plugins or other plugin		
 		if ( class_exists( 'Plugin_Starter' ) ) {
@@ -107,4 +107,9 @@ if ( ! function_exists( 'check_for_plugin_starter' ) ) {
 		add_filter ( 'check_for_plugin_starter_exists' , create_function('', "return $exists;") );				
 		add_action ( 'admin_notices' , 'check_for_plugin_starter_notice' );
 	}
+}
+
+// finally... load the plugin starter if it has downloaded or exists:
+if ( file_exists( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'core/plugin-starter.php' ) ) {
+	include( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'core/plugin-starter.php' );
 }
